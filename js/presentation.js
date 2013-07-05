@@ -56,7 +56,7 @@ Presentation.prototype.isEventsBinded = false;
  * @returns {Presentation}
  */
 Presentation.prototype.setPages = function(pages) {
-    this.pages = pages;
+    this.pages = pages || [];
     this.updateView();
     return this;
 };
@@ -67,7 +67,7 @@ Presentation.prototype.setPages = function(pages) {
  * @returns {Presentation}
  */
 Presentation.prototype.preloadPage = function(pageNumber) {
-    if (pageNumber >= 0 && pageNumber <= this.pages.length) {
+    if (pageNumber >= 0 && pageNumber <= this.pages.length - 1) {
         var image = new Image();
         image.src = this.pages[pageNumber];
     }
@@ -80,7 +80,7 @@ Presentation.prototype.preloadPage = function(pageNumber) {
  * @returns {Presentation}
  */
 Presentation.prototype.setPage = function(pageNumber) {
-    this.pageNumber = pageNumber;
+    this.pageNumber = pageNumber || 0;
     this.updateView();
     return this;
 };
@@ -127,6 +127,10 @@ Presentation.prototype.bindEvents = function() {
     if (this.isEventsBinded) {
         return this;
     }
+
+    this.$el.on('dblclick', function() {
+        fullScreen(self.$el[0]);
+    });
 
     this.$el.on('mousemove click', function() {
         if (self.isActionsHidden) {
@@ -262,3 +266,19 @@ var KEY = {
     PAGEDOWN: 34,
     SPACE: 32
 };
+
+function fullScreen(el) {
+    var isInFullScreen = (document.fullScreenElement && document.fullScreenElement !== null) ||
+                         (document.mozFullScreen || document.webkitIsFullScreen);
+
+    var element = el || document.documentElement;
+    if (!isInFullScreen) {
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        } else if (element.webkitRequestFullScreen) {
+            element.webkitRequestFullScreen();
+        }
+    }
+}

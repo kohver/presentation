@@ -12,16 +12,19 @@ $('.presentation').each(function(i) {
             break;
         default:
             pages = [
-                'http://placehold.it/750x250',
-                'http://placehold.it/750x350',
                 'http://placehold.it/750x450',
                 'http://placehold.it/750x550',
                 'http://placehold.it/750x650',
-                'http://placehold.it/750x750'
+                'http://placehold.it/750x750',
+                'http://placehold.it/750x850',
+                'http://placehold.it/750x950',
+                'http://placehold.it/750x1050'
             ];
             break;
     }
 
     var presentation = new Presentation(jQuery(this));
     presentation.setPages(pages);
+
+    jQuery(this).css('background-color', '#' + (i + 1) + (i + 1) + (i + 1));
 });
