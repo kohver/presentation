@@ -2,6 +2,8 @@
  * Объект простой презентации.
  * Хочется выделить Page как отдельный объект,
  * но так как это демо, решил использовать минимум кода.
+ * Проект доступен на ГитХабе https://github.com/kohver/presentation
+ * @author https://github.com/kohver
  * @class
  * @property {boolean} isStaticEventsBound
  * @property {Presentation} focusedPresentation
