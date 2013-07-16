@@ -1,3 +1,54 @@
+// Константы всякие
+var KEY = {
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40,
+    DEL: 8,
+    TAB: 9,
+    RETURN: 13,
+    ENTER: 13,
+    ESC: 27,
+    PAGEUP: 33,
+    PAGEDOWN: 34,
+    SPACE: 32
+};
+
+// Кроссбраузерный фулскрин
+function fullScreen(el) {
+    var isInFullScreen = (document.fullScreenElement && document.fullScreenElement !== null) ||
+                         (document.mozFullScreen || document.webkitIsFullScreen);
+
+    if (!isInFullScreen) {
+        var element = el || document.documentElement;
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            e = element;
+            element.mozRequestFullScreen();
+        } else if (element.webkitRequestFullScreen) {
+            element.webkitRequestFullScreen();
+        }
+    }
+}
+
+// Простой шалонизатор
+var Template = {
+    render: function(templateName, data) {
+        var template = $('#' + templateName).html();
+
+        data = data || {};
+
+        var html = template.replace(/{{([\s\w]+)}}/g, function() {
+            var varName = $.trim(arguments[1]);
+            return data[varName] || '';
+        });
+
+        return html;
+    }
+};
+
+// Инициализация проекта
 $('.presentation').each(function(i) {
     var pages = [];
 
@@ -23,8 +74,6 @@ $('.presentation').each(function(i) {
             break;
     }
 
-    var presentation = new Presentation(jQuery(this));
-    presentation.setPages(pages);
-
-    jQuery(this).css('background-color', '#' + (i + 1) + (i + 1) + (i + 1));
+    var color = '#' + (i + 1) + (i + 1) + (i + 1);
+    jQuery(this).presentation(pages).css('background-color', color);
 });

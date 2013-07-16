@@ -2,18 +2,58 @@
  * Объект простой презентации.
  * Хочется выделить Page как отдельный объект,
  * но так как это демо, решил использовать минимум кода.
+ * @class
+ * @property {boolean} isStaticEventsBound
+ * @property {Presentation} focusedPresentation
  * @param {jQuery} $el
- * @constructor
  */
 var Presentation = function($el) {
     this.$el = $el;
     this.pages = [];
     this.pageNumber = 0;
+
+    Presentation.focusedPresentation = this;
+    Presentation.bindStaticEvents();
+};
+
+/**
+ * @private
+ * @type {boolean}
+ */
+Presentation.isStaticEventsBound = false;
+
+/**
+ * Сфокусированная презентация.
+ * То есть та, которая переключается клавишами вперед-назад
+ * @protected
+ * @type {Presentation}
+ */
+Presentation.focusedPresentation = null;
+
+/**
+ * @static
+ */
+Presentation.bindStaticEvents = function() {
+    if (this.isStaticEventsBound) {
+        return;
+    }
+
+    this.isStaticEventsBound = true;
+    var self = this;
+    $(document).on('keydown', function(e) {
+        switch (e.keyCode) {
+            case KEY.RIGHT:
+                self.focusedPresentation.nextPage();
+                break;
+            case KEY.LEFT:
+                self.focusedPresentation.prevPage();
+                break;
+        }
+    });
 };
 
 /**
  * Флаг видимости кнопок поверх презентации
- * @property
  * @private
  * @type {boolean}
  */
@@ -21,7 +61,6 @@ Presentation.prototype.isActionsHidden = false;
 
 /**
  * jQuery-объект, в котором будет отрисовываться презентация
- * @property
  * @protected
  * @type {jQuery}
  */
@@ -29,7 +68,6 @@ Presentation.prototype.$el = null;
 
 /**
  * Коллекция страниц
- * @property
  * @protected
  * @type {object}
  */
@@ -37,18 +75,16 @@ Presentation.prototype.pages = null;
 
 /**
  * Текущий номер страницы
- * @property
  * @protected
  * @type {number}
  */
 Presentation.prototype.pageNumber = null;
 
 /**
- * @property
  * @private
  * @type {boolean}
  */
-Presentation.prototype.isEventsBinded = false;
+Presentation.prototype.isEventsBound = false;
 
 /**
  * Задать страницы
@@ -96,8 +132,7 @@ Presentation.prototype.nextPage = function() {
         this.pageNumber = 0;
     }
 
-    this.preloadPage(this.pageNumber + 1);
-    this.updateView();
+    this.preloadPage(this.pageNumber + 1).updateView();
     return this;
 };
 
@@ -112,8 +147,7 @@ Presentation.prototype.prevPage = function() {
         this.pageNumber = this.pages.length - 1;
     }
 
-    this.preloadPage(this.pageNumber - 1);
-    this.updateView();
+    this.preloadPage(this.pageNumber - 1).updateView();
     return this;
 };
 
@@ -124,7 +158,7 @@ Presentation.prototype.prevPage = function() {
 Presentation.prototype.bindEvents = function() {
     var self = this;
 
-    if (this.isEventsBinded) {
+    if (this.isEventsBound) {
         return this;
     }
 
@@ -133,6 +167,8 @@ Presentation.prototype.bindEvents = function() {
     });
 
     this.$el.on('mousemove click', function() {
+        Presentation.focusedPresentation = self;
+
         if (self.isActionsHidden) {
             self.showActions();
         }
@@ -158,18 +194,7 @@ Presentation.prototype.bindEvents = function() {
         }, 0);
     });
 
-    $(document).on('keydown', function(e) {
-        switch (e.keyCode) {
-            case KEY.RIGHT:
-                self.nextPage();
-            break;
-            case KEY.LEFT:
-                self.prevPage();
-            break;
-        }
-    });
-
-    this.isEventsBinded = true;
+    this.isEventsBound = true;
     return this;
 };
 
@@ -235,50 +260,15 @@ Presentation.prototype.hideActions = function(timeout) {
     return this;
 };
 
-// Простой шалонизатор
-var Template = {
-    render: function(templateName, data) {
-        var template = $('#' + templateName).html();
-
-        data = data || {};
-
-        var html = template.replace(/{{([\s\w]+)}}/g, function() {
-            var varName = $.trim(arguments[1]);
-            return data[varName] || '';
-        });
-
-        return html;
-    }
-};
-
-// Константы всякие
-var KEY = {
-    LEFT: 37,
-    UP: 38,
-    RIGHT: 39,
-    DOWN: 40,
-    DEL: 8,
-    TAB: 9,
-    RETURN: 13,
-    ENTER: 13,
-    ESC: 27,
-    PAGEUP: 33,
-    PAGEDOWN: 34,
-    SPACE: 32
-};
-
-function fullScreen(el) {
-    var isInFullScreen = (document.fullScreenElement && document.fullScreenElement !== null) ||
-                         (document.mozFullScreen || document.webkitIsFullScreen);
-
-    var element = el || document.documentElement;
-    if (!isInFullScreen) {
-        if (element.requestFullscreen) {
-            element.requestFullscreen();
-        } else if (element.mozRequestFullScreen) {
-            element.mozRequestFullScreen();
-        } else if (element.webkitRequestFullScreen) {
-            element.webkitRequestFullScreen();
-        }
-    }
-}
+// Плагин для jQuery? Да легко!
+(function($) {
+    /**
+     * @param {Object} pages
+     * @returns {jQuery}
+     */
+    $.fn.presentation = function(pages) {
+        this.presentation = new Presentation(this);
+        this.presentation.setPages(pages);
+        return this;
+    };
+})(jQuery);
